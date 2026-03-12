@@ -16,19 +16,19 @@ Zero `if/else` verificando tipo de conexão. O design utiliza abstrações corre
 
 ```
 ┌─────────────────────────────────────────────┐
-│        Dashboard Component                   │
-│        (Smart Component)                     │
-│                                              │
+│        Dashboard Component                  │
+│        (Smart Component)                    │
+│                                             │
 │  ❌ NÃO conhece WebSocket                   │
-│  ❌ NÃO conhece HTTP                         │
+│  ❌ NÃO conhece HTTP                        │
 │  ✅ Consome DataStreamService               │
 └──────────────┬──────────────────────────────┘
                │
                │ Dependency Injection
                ▼
 ┌──────────────────────────────────────────────┐
-│        DataStreamService                      │
-│        (Context - Strategy Pattern)           │
+│        DataStreamService                     │
+│        (Context - Strategy Pattern)          │
 │                                              │
 │  • Gerencia estratégias                      │
 │  • Implementa fallback automático            │
@@ -37,13 +37,13 @@ Zero `if/else` verificando tipo de conexão. O design utiliza abstrações corre
       │                                │
       │ DI                             │ DI
       ▼                                ▼
-┌─────────────────────┐    ┌─────────────────────┐
-│ WebSocketStrategy   │    │ HttpPollingStrategy │
-│ (Concrete Strategy) │    │ (Concrete Strategy) │
-│                     │    │                     │
-│ • Socket.IO         │    │ • HTTP Long Polling │
+┌─────────────────────┐    ┌──────────────────────┐
+│ WebSocketStrategy   │    │ HttpPollingStrategy  │
+│ (Concrete Strategy) │    │ (Concrete Strategy)  │
+│                     │    │                      │
+│ • Socket.IO         │    │ • HTTP Long Polling  │
 │ • Baixa latência    │    │ • Fallback resiliente│
-└─────────────────────┘    └─────────────────────┘
+└─────────────────────┘    └──────────────────────┘
 ```
 
 ## 📂 Estrutura de Arquivos
@@ -107,6 +107,7 @@ npm run start:dev
 ```
 
 O servidor estará rodando em:
+
 - HTTP: `http://localhost:3000`
 - WebSocket: `ws://localhost:3000/processing`
 
@@ -145,7 +146,7 @@ export class DataStreamService {
   // Angular DI injeta as estratégias automaticamente
   private readonly wsStrategy = inject(WebSocketStreamStrategy);
   private readonly httpStrategy = inject(HttpPollingStreamStrategy);
-  
+
   private currentStrategy: DataStreamStrategy;
 }
 ```
@@ -156,7 +157,7 @@ export class DataStreamService {
 @Component({ /* ... */ })
 export class DashboardComponent {
   private readonly dataStreamService = inject(DataStreamService);
-  
+
   startProcessing(): void {
     // ✅ Zero conhecimento sobre WebSocket ou HTTP
     this.dataStreamService.startTask({ taskId })
@@ -203,11 +204,13 @@ connect(): Observable<boolean> {
 ## 🧪 Testando o Fallback
 
 ### Cenário 1: WebSocket Disponível
+
 1. Inicie backend e frontend normalmente
 2. Observe o chip de status: "Conectado: WebSocket"
 3. Inicie uma tarefa - updates em tempo real via WebSocket
 
 ### Cenário 2: WebSocket Indisponível
+
 1. Pare o backend
 2. Inicie o frontend
 3. Observe o fallback automático para "HTTP Long Polling"
@@ -215,6 +218,7 @@ connect(): Observable<boolean> {
 5. As requisições funcionam via HTTP
 
 ### Cenário 3: Troca Manual (Demo)
+
 1. Use os botões "WebSocket" e "HTTP Polling"
 2. Observe a troca transparente de estratégia
 3. O componente continua funcionando identicamente
@@ -223,7 +227,8 @@ connect(): Observable<boolean> {
 
 ### WebSocket Flow
 
-```
+```typescript
+
 Dashboard Component
     ↓ startTask()
 DataStreamService
@@ -240,11 +245,12 @@ DataStreamService
 Dashboard Component
     ↓ Signal update
 UI Update (Material Progress Bar)
+
 ```
 
 ### HTTP Polling Flow
 
-```
+```typescript
 Dashboard Component
     ↓ startTask()
 DataStreamService
@@ -294,12 +300,14 @@ class DashboardComponent {
 ## 🔧 Tecnologias
 
 ### Backend
+
 - NestJS 10
 - Socket.IO 4
 - RxJS 7
 - TypeScript 5
 
 ### Frontend
+
 - Angular 17 (Standalone Components)
 - Angular Material 17
 - Socket.IO Client 4
@@ -313,6 +321,7 @@ class DashboardComponent {
 **Namespace:** `/processing`
 
 **Events:**
+
 - `start-task` - Inicia processamento
 - `task-progress` - Recebe atualizações
 - `stop-task` - Para processamento
@@ -323,6 +332,7 @@ class DashboardComponent {
 **Base URL:** `http://localhost:3000/processing`
 
 **Endpoints:**
+
 - `POST /start` - Inicia tarefa
 - `GET /poll/:taskId` - Long polling para updates
 - `POST /stop/:taskId` - Para tarefa
@@ -330,15 +340,15 @@ class DashboardComponent {
 
 ## 🎯 Resultados
 
-✅ **Zero acoplamento** entre componente e protocolo  
-✅ **Fallback transparente** sem intervenção do componente  
-✅ **Testabilidade** perfeita (mock de estratégias)  
-✅ **Extensibilidade** fácil (novas estratégias sem alterar componente)  
-✅ **Type-safety** completo com TypeScript  
-✅ **Performance** otimizada com Signals  
+✅ **Zero acoplamento** entre componente e protocolo
+✅ **Fallback transparente** sem intervenção do componente
+✅ **Testabilidade** perfeita (mock de estratégias)
+✅ **Extensibilidade** fácil (novas estratégias sem alterar componente)
+✅ **Type-safety** completo com TypeScript
+✅ **Performance** otimizada com Signals
 
 ---
 
-**Autor:** Sistema de Dashboard em Tempo Real  
-**Pattern:** Strategy + Dependency Injection  
+**Autor:** Sistema de Dashboard em Tempo Real
+**Pattern:** Strategy + Dependency Injection
 **Framework:** NestJS + Angular 17
